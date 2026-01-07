@@ -4,7 +4,10 @@
 
 -- MADE WITH ❤ BY BMX / SMELLYOU 
 -- PLEASE LEAVE THIS HERE!
--- 
+        -- CREDITS --
+     -- OUTFITMODELER--
+     -- davidsuper2000 -
+
 
 --------------------------------------------------
 -- MENU STATE (MUST BE FIRST) - DO NOT CHANGE
