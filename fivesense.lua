@@ -6,7 +6,7 @@
 -- PLEASE LEAVE THIS HERE!
         -- CREDITS --
      -- OUTFITMODELER--
-     -- davidsuper2000 -
+    -- davidsuper2000 -
 
 
 --------------------------------------------------
@@ -52,6 +52,8 @@ local menu = {  -- MAIN MENU HELPERS
     -- welcome notification
     notified = false
 }
+local LUA_ROOT = FileMgr.GetMenuRootPath() .. "\\Lua"
+local helper = dofile(LUA_ROOT .. "\\fivesensehelper.lua")
 menu.playerInfoOffset = { 518, 0 }
 
 
@@ -147,7 +149,7 @@ local themeData = {
 -- TABS
 --------------------------------------------------
 local tabNames = {
-    "Self", "Vehicle", "Weapon", "Players", "World", "Settings" --- FOR THE FIVESENSE > TABNAME 
+    "Self", "Vehicle", "Weapon", "Players", "World", "Settings" ,"Custom Widgets" --- FOR THE FIVESENSE > TABNAME 
 }
 
 
@@ -453,55 +455,55 @@ end
 
 DRAW_TEXT("Press INS To Open!")  --- display welcome text before rendering ui 
 local function RenderFiveSense()
-   --RenderCrosshairWindow() // func needs fixed since i couldnt figure out how to get a mouse curson /// thanks to chat gpt for the
-
+    -- Toggle menu
     if ImGui.IsKeyPressed(ImGuiKey.Insert) then
-    menu.open = not menu.open
+        menu.open = not menu.open
+        if menu.open and not menu.notified then
+            menu.notified = true
+        end
+    end
 
-    if menu.open and not menu.notified then
-        menu.notified = true
-    end
-    end
-    
-    
     if not menu.open then return end
 
     PushFiveSenseStyle()
-    
-    ImGui.SetNextWindowSize(515, 390)
 
+    ImGui.SetNextWindowSize(515, 390)
     ImGui.Begin("##FiveSense", true,
         ImGuiWindowFlags.NoTitleBar |
         ImGuiWindowFlags.NoResize |
         ImGuiWindowFlags.NoScrollbar |
         ImGuiWindowFlags.NoScrollWithMouse
     )
+
     menu.mainPosX, menu.mainPosY = ImGui.GetWindowPos()
     menu.mainSizeX, menu.mainSizeY = ImGui.GetWindowSize()
 
     local r, g, b = GetAccentColor()
 
+    -- Top accent bar
     ImGui.PushStyleColor(ImGuiCol.Button, r, g, b, 1)
     ImGui.Button("##topbar", -1, 3)
     ImGui.PopStyleColor()
 
     ImGui.Spacing()
 
+    --------------------------------------------------
+    -- SIDEBAR
+    --------------------------------------------------
     if ImGui.BeginChild("##sidebar", 120, -1, true) then
         for i, icon in ipairs(tabIcons) do
             if ImGui.Button(icon, -1, 42) then
-    if menu.tab ~= i then
-        menu.tab = i
-        menu.animatingTab = i
-        menu.animationTime = 0
+                if menu.tab ~= i then
+                    menu.tab = i
+                    menu.animatingTab = i
+                    menu.animationTime = 0
 
-        -- hide player info when leaving Players tab
-        if i ~= 4 then
-            menu.selectedPlayer = nil
-            menu.showPlayerInfo = false
-        end
-    end
-        end
+                    if i ~= 4 then
+                        menu.selectedPlayer = nil
+                        menu.showPlayerInfo = false
+                    end
+                end
+            end
             ImGui.Spacing()
         end
         ImGui.EndChild()
@@ -509,140 +511,120 @@ local function RenderFiveSense()
 
     ImGui.SameLine()
 
+    --------------------------------------------------
+    -- CONTENT
+    --------------------------------------------------
     if ImGui.BeginChild("##content", -1, -1, true) then
         RenderAnimatedBreadcrumb()
         ImGui.Separator()
         ImGui.Spacing()
 
-        local childW = (ImGui.GetContentRegionAvail() - 10) * 0.5
-        local childH = 115
-        local btnH   = 22
-
-        local function CenterTitle(text)
-            local w = ImGui.CalcTextSize(text)
-            ImGui.SetCursorPosX((ImGui.GetWindowWidth() - w) * 0.5)
-            ImGui.Text(text)
-            ImGui.PushStyleColor(ImGuiCol.Separator, r, g, b, 0.9)
-            ImGui.Separator()
-            ImGui.PopStyleColor()
-            ImGui.Spacing()
-        end
-
         --------------------------------------------------
-        -- SELF TAB
+        -- SELF TAB (SIMPLE DEMO CONTROLS)
         --------------------------------------------------
         if menu.tab == 1 then
-            ImGui.Text("THIS TAB IS AN EXAMPLE! ")
+            ImGui.Text("Checkbox:")
+            menu.selfGod = ImGui.Checkbox("Godmode", menu.selfGod)
+
             ImGui.Spacing()
-            ImGui.Text("CHECKBOX")
-            menu.vehicleGod = ImGui.Checkbox("Godmode", menu.vehicleGod)
-               ImGui.Spacing()
-            ImGui.Text("BUTTON")
-            ImGui.Button("Apply", 120, 24)
+
+            ImGui.Text("Slider:")
+            menu.selfSpeed = ImGui.SliderFloat(
+                "Speed",
+                menu.selfSpeed,
+                1.0,
+                10.0
+            )
+
             ImGui.Spacing()
-            ImGui.Text("SLIDER")
-            menu.demoIntensity = ImGui.SliderFloat("Intensity", menu.demoIntensity, 0.0, 1.0)
-            ImGui.Spacing()
-            ImGui.Text("COMBO")
-             if ImGui.BeginCombo("##theme", menu.theme) then
-                for themeName, _ in pairs(themeData[menu.themeCategory]) do
-                    if ImGui.Selectable(themeName, menu.theme == themeName) then
-                        menu.theme = themeName
+
+            ImGui.Text("Dropdown:")
+            menu.selfMode = menu.selfMode or "Normal"
+            if ImGui.BeginCombo("Movement Mode", menu.selfMode) then
+                local modes = { "Normal", "Fast", "Stealth" }
+                for _, m in ipairs(modes) do
+                    if ImGui.Selectable(m, menu.selfMode == m) then
+                        menu.selfMode = m
                     end
                 end
                 ImGui.EndCombo()
             end
-        end
 
-        --------------------------------------------------
-        -- VEHICLE TAB
-        --------------------------------------------------
-        if menu.tab == 2 then
-            ImGui.Text("EMPTY PLS FILL ")
-        end
-        --------------------------------------------------
-        -- WEAPON TAB
-        --------------------------------------------------
-        if menu.tab == 3 then
-               ImGui.Text("EMPTY PLS FILL ")
-        end
-        --------------------------------------------------
-        -- PLAYER TAB
-        --------------------------------------------------
-    if menu.tab == 4 then
-    ImGui.BeginChild("##player_icons", -1, -1, true)
-
-    local myId = Natives.InvokeInt(0x4F8644AF03D0E0D6)
-
-    for pid = 0, 31 do
-        if Natives.InvokeBool(0xB8DFD30D6973E135, pid) then
-            local name = Natives.InvokeString(0x6D0DE6A7B5DA71F8, pid) or "Unknown"
-            local ped  = Natives.InvokeInt(0x43A66C31C68491C0, pid)
-            local inVeh = ped ~= 0 and Natives.InvokeBool(0x997ABD671D25CA0B, ped)
-
-            local r,g,b = 1,1,1
-            if pid == myId then
-                r,g,b = GetAccentColor()
-            elseif inVeh then
-                r,g,b = 0.3,0.8,1.0
-            end
-
-            ImGui.PushStyleColor(ImGuiCol.Button, 0.1,0.1,0.1,1)
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, r,g,b,0.9)
-            ImGui.PushStyleColor(ImGuiCol.ButtonActive, r,g,b,1)
-
-            if ImGui.Button("\u{f007}", 42, 42) then -- FontAwesome user icon
-                menu.selectedPlayer = pid
-            end
-
-            ImGui.PopStyleColor(3)
-
-            ImGui.SameLine()
-            ImGui.Text(name)
             ImGui.Spacing()
-        end
-    end
 
-    ImGui.EndChild()
-    end
-        --------------------------------------------------
-        -- WORLD TAB
-        --------------------------------------------------
-        if menu.tab == 5 then
-              ImGui.Text("EMPTY PLS FILL ")
+            ImGui.Text("Button:")
+            if ImGui.Button("Apply Self Settings", 180, 26) then
+                DRAW_TEXT("Self settings applied!")
+            end
         end
 
         --------------------------------------------------
-        -- SETTINGS TAB (UNCHANGED FUNCTIONALLY)
+        -- SETTINGS TAB
         --------------------------------------------------
         if menu.tab == 6 then
-            ImGui.Text("Theme Category")
-            if ImGui.BeginCombo("##category", menu.themeCategory) then
-                for catName, _ in pairs(themeData) do
-                    if ImGui.Selectable(catName, menu.themeCategory == catName) then
-                        menu.themeCategory = catName
-                        menu.theme = next(themeData[catName])
-                    end
+            menu.settingsSubTab = menu.settingsSubTab or 1
+            local subTabs = { "Themes", "Custom Widgets" }
+
+            for i, name in ipairs(subTabs) do
+                ImGui.PushID(i)
+                if ImGui.Selectable(name, menu.settingsSubTab == i, 0, 120, 22) then
+                    menu.settingsSubTab = i
                 end
-                ImGui.EndCombo()
+                ImGui.PopID()
+
+                if i < #subTabs then
+                    ImGui.SameLine()
+                end
             end
 
-            ImGui.Spacing()
-            ImGui.Text("Selected Theme")
-            if ImGui.BeginCombo("##theme", menu.theme) then
-                for themeName, _ in pairs(themeData[menu.themeCategory]) do
-                    if ImGui.Selectable(themeName, menu.theme == themeName) then
-                        menu.theme = themeName
-                    end
-                end
-                ImGui.EndCombo()
-            end
-
+            ImGui.NewLine()
             ImGui.Separator()
             ImGui.Spacing()
-            menu.demoCheckbox = ImGui.Checkbox("Enable Feature", menu.demoCheckbox)
-            menu.demoIntensity = ImGui.SliderFloat("Intensity", menu.demoIntensity, 0.0, 1.0)
-            ImGui.Button("Apply", 120, 24)
+
+            --------------------------------------------------
+            -- THEMES
+            --------------------------------------------------
+            if menu.settingsSubTab == 1 then
+                ImGui.Text("Theme Category")
+                if ImGui.BeginCombo("##category", menu.themeCategory) then
+                    for cat in pairs(themeData) do
+                        if ImGui.Selectable(cat, menu.themeCategory == cat) then
+                            menu.themeCategory = cat
+                            menu.theme = next(themeData[cat])
+                        end
+                    end
+                    ImGui.EndCombo()
+                end
+
+                ImGui.Spacing()
+
+                ImGui.Text("Theme")
+                if ImGui.BeginCombo("##theme", menu.theme) then
+                    for theme in pairs(themeData[menu.themeCategory]) do
+                        if ImGui.Selectable(theme, menu.theme == theme) then
+                            menu.theme = theme
+                        end
+                    end
+                    ImGui.EndCombo()
+                end
+            end
+
+            --------------------------------------------------
+            -- CUSTOM WIDGETS (ANIMATED BUTTON ONLY)
+            --------------------------------------------------
+            if menu.settingsSubTab == 2 then
+                ImGui.Text("Animated Button:")
+
+                if helper.AnimatedButton(
+                    "demo_anim_btn",
+                    "Play Animation",
+                    180,
+                    28,
+                    r, g, b
+                ) then
+                    DRAW_TEXT("Animated button clicked!")
+                end
+            end
         end
 
         ImGui.EndChild()
@@ -650,8 +632,11 @@ local function RenderFiveSense()
 
     ImGui.End()
     PopFiveSenseStyle()
+
     RenderPlayerInfoWindow()
 end
+
+
 
 
 --------------------------------------------------
