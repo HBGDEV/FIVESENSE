@@ -5,6 +5,8 @@
 ██╔══╝░░██║░╚████╔╝░██╔══╝░░░╚═══██╗██╔══╝░░██║╚████║░╚═══██╗██╔══╝░░
 ██║░░░░░██║░░╚██╔╝░░███████╗██████╔╝███████╗██║░╚███║██████╔╝███████╗
 ╚═╝░░░░░╚═╝░░░╚═╝░░░╚══════╝╚═════╝░╚══════╝╚═╝░░╚══╝╚═════╝░╚══════╝
-CHERAX IMGUI BASE MADE TI LOOK CLOSE TO GAMESENSE
 
+
+
+CHERAX IMGUI BASE MADE To LOOK CLOSE TO GAMESENSE
 - VERSION 1.00  JUST UPLOADED FOR PUBLIC USE 
