@@ -448,7 +448,6 @@ end
 -- MAIN RENDER
 --------------------------------------------------
 
-DRAW_TEXT("Press INS To Open!")  --- display welcome text before rendering ui 
 local function RenderFiveSense()
    --RenderCrosshairWindow() // func needs fixed since i couldnt figure out how to get a mouse curson /// thanks to chat gpt for the
 
@@ -457,6 +456,7 @@ local function RenderFiveSense()
 
     if menu.open and not menu.notified then
         menu.notified = true
+        pcall(function() DRAW_TEXT("Welcome to FiveSense!") end)
     end
     end
     
